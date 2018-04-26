@@ -19,6 +19,10 @@ try:
 except:
     print "error"
 import georef
+import calibrate
+from PIL import Image
+from PIL.ExifTags import TAGS
+from math import *  
 import GeoImageCoor
 import transimage
 import transformations
@@ -297,6 +301,8 @@ def browseClickHeight():
     Height_param.plainTextEdit.setPlainText(path_point)
     Height_param.pushButton_2.setEnabled(True)
     return True
+
+
 def guiCall():
     print "gui"
     GUI.main()
@@ -465,47 +471,31 @@ def calculateParameterClicked():
         cameraCalib.pushButton.setText("Recalculate Parameters")
         return True
 
+def sen(d):
+    HFOV=53.0
+    a=tan((0.5*HFOV)/57.296)
+    b=float(d)*a
+    sensorWidth=2.0*b
+    ccd=sensorWidth
+    print ccd
+    return ccd
 
 
 def OnCalcNumPhotos():
-        f=open(os.path.join(wrk_drr,r'camera_calibration\calib_temp.txt'),'r')
-##        numerator=int(field_param.plainTextEdit.toPlainText())
-##        denominator=int(field_param.plainTextEdit_2.toPlainText())
-        
-        for i in range(2):
-            a=f.readline()
-        try:
-            b=a.split(' ')
-            ccd=float(b[3])
-        except:
-            print("provide senser width")
-           # win32api.MessageBox("Sensor width could not be obtained. Make sure to calculate or load camera parameters before proceeding further.")
-
-        for i in range(7):
-            a=f.readline()
-
-        try:
-            b=a.split(' ')
-            focalLength=float(b[3])
-        except:
-            print("provide focal length")
-            #win32api.MessageBox("Focal length could not be obtained. Make sure to calculate or load camera parameters before proceeding further.")
-        numerator=  (float(field_param.plainTextEdit.toPlainText())*focalLength)/( ccd*float(field_param.plainTextEdit_2.toPlainText()) )
-        denominator=(1-float(field_param.comboBox.currentText())/100)
-##        if int(field_param.plainTextEdit.toPlainText())==0 or int(field_param.plainTextEdit_2.toPlainText())==0:
-##            #win32api.MessageBox('Path Length and Distance from building should be positive','Error')
-##            numerator=  (float(field_param.plainTextEdit.toPlainText())*focalLength)/( ccd*float(field_param.plainTextEdit_2.toPlainText()) )
-##            denominator=(1-float(field_param.comboBox.currentText())/100)
-        if (numerator-1)/denominator >= 0:
-            number=float( (numerator-1)/denominator+1 )
-            field_param.plainTextEdit_5.setPlainText( str(int(number)) )
-            time=int(float(field_param.plainTextEdit_4.toPlainText())*float(number))
-            hours=int(time/3600)
-            minutes=int( (time-hours*3600)/60 )
-            seconds=int( time-minutes*60-hours*3600 )
-            field_param.plainTextEdit_6.setPlainText( str(hours)+"h:"+str(minutes)+"m:"+str(seconds)+"s" )
-        else:
-            field_param.plainTextEdit_5.setPlainText(str(1))
+    d=calibrate.getExif()
+    g=sen(d)
+    numerator=(float(field_param.plainTextEdit.toPlainText())*float(d))/( float(g)*float(field_param.plainTextEdit_2.toPlainText()) )
+    denominator=(1-float(field_param.comboBox.currentText())/100)
+    if (numerator-1)/denominator >= 0:
+        number=float( (numerator-1)/denominator+1 )
+        field_param.plainTextEdit_5.setPlainText( str(int(number)) )
+        time=int(float(field_param.plainTextEdit_4.toPlainText())*float(number))
+        hours=int(time/3600)
+        minutes=int( (time-hours*3600)/60 )
+        seconds=int( time-minutes*60-hours*3600 )
+        field_param.plainTextEdit_6.setPlainText( str(hours)+"h:"+str(minutes)+"m:"+str(seconds)+"s" )
+    else:
+        field_param.plainTextEdit_5.setPlainText(str(1))
         
 def RepresentsInt(s):
         try: 
@@ -578,6 +568,9 @@ def browseKMLClicked():
     dialog.setFilter('*.kml')
     dialog.exec_()
     kmlPath= dialog.selectedFiles()[0]
+    os.rename(os.path.join(str(kmlPath)), os.path.join(projPath,"input"+"\\"+filename))
+    #os.rename(os.path.join(str(kmlPath)),os.path.join(projPath,"input"+"\\"+files_build))
+    print kmlPath
     building= os.path.basename(str(kmlPath)).split(".")[0]
     testpath=os.path.join(projPath,"input")+"\\"+building
     os.chdir(testpath)
@@ -972,7 +965,7 @@ def helpClicked():
     return True
 def aboutClicked():
     print "aboutClicked"
-    msg=str("Trivim 1.0\n\nTrivim (alpha) is an open source application for generating 3D-Street Model. The application generates photorealistic georeferenced 3D Street Model using photogrammetric processing of overlapping 2D images.\n\nTechnical Advisors: Dr. Y.V.N.Krishnamurthy, Mr. P.L.N. Raju, Ms. Shefali Agrawal\n\nTeam: Dr. Poonam S Tiwari, Dr. Hina Pande, Mr. S. Raghavendra, Mr. K. Shiva Reddy,\n           Mr. Mayank Sharma, BITS Interns (2013,2014), Ms. Shweta Beniwal\n\n\n© IIRS, 2014")
+    msg=str("Trivim 1.0\n\nTrivim (alpha) is an open source application for generating 3D-Street Model. The application generates photorealistic georeferenced 3D Street Model using photogrammetric processing of overlapping 2D images.\n\nTechnical Advisors: Dr. Y.V.N.Krishnamurthy, Mr. P.L.N. Raju, Ms. Shefali Agrawal\n\nTeam: Dr. Poonam S Tiwari, Dr. Hina Pande, Mr. S. Raghavendra, Mr. K. Shiva Reddy,\n           Mr. Mayank Sharma, BITS Interns (2013,2014), Ms. Shweta Beniwal\n\n\nÂ© IIRS, 2014")
     msgBox=QMessageBox()
     msgBox.setText(msg)
     msgBox.setWindowTitle("About Trivim")
