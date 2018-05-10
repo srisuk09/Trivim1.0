@@ -249,21 +249,23 @@ def browseClicked(): # browseClicked in chessboard
     except:
         print "no image directory choosen"
         return False
-    os.chdir(path_calib)
-    fi_name= glob("*.JPG")
-    try:
-        graypath= os.path.join(projPath,"gry")
-        os.makedirs(graypath)
-        print "directory created"
-        for fi in fi_name:
-            print fi
-            img = Image.open(fi).convert("L")
-            print "image converted"
-            img.save(os.path.join(graypath,fi))
-            print "file saved"
-        path_calib = graypath
-    except:
-        print("Can not convert to gray")
+    #os.chdir(path_calib)
+    #fi_name= glob("*.JPG")
+    #try:
+        #graypath= os.path.join(projPath,"gry")
+        #os.makedirs(graypath)
+        #print "directory created"
+        #for fi in fi_name:
+            #print fi
+            #img = Image.open(fi)
+            #img = Image.open(fi).convert("L")
+            #print "image converted"
+            #img.save(os.path.join(graypath,fi))
+            #img.save(os.path.join(graypath,fi))
+            #print "file saved"
+        #path_calib = graypath
+    #except:
+        #print("Can not convert to gray")
     
 def checkGeotag():
         os.chdir(projPath)
